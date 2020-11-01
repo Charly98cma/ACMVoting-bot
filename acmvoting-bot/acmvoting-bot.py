@@ -48,7 +48,6 @@ def register_Command(update, context):
 ########
 # MAIN #
 ########
-
 def main():
     # TOKEN
     if 'VOTING_TOKEN' not in os.environ:
@@ -74,12 +73,10 @@ def main():
     # Connection with the DB (must be a global variable)
     conn = sqlite3.connect('voters.db')
     print("-> Connected to the DB")
-
     # Creation of the table if doesn't exists
     conn.execute('''CREATE TABLE IF NOT EXISTS registered_users(
     telegramID VARCHAR(64) PRIMARY KEY,
     fullName VARCHAR(64) NOT NULL);''')
-    
     cursor = conn.cursor()
     
     # Starts the bot
