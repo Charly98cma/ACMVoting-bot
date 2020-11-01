@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from telegram import Update
-from telegra.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler
 
-from msgs import *
+import msgs
 
 import os
 import sys
