@@ -9,26 +9,57 @@ import os
 import sys
 import sqlite3
 
+# Unique connection with the DB (must be a global variable)
+conn = sqlite3.connect('voters.db')
+print("-> Connected to the DB")
+
+# List of candidates (the first one is the blank vote)
+candidates = ["blanco", "ferrero"]
+
+
 ######################
 # AUXILIAR FUNCTIONS #
 ######################
 
+def initDB():
+    # Creation of the table 'registered_users'
+    conn.execute('''CREATE TABLE IF NOT EXISTS registered_users(
+    telegramID VARCHAR(64) PRIMARY KEY NOT NULL,
+    alias VARCHAR(64) NOT NULL,
+    fullName VARCHAR(64) NOT NULL);''')
+    print("-> Created 'registered_users' table")
+
+    # Creation of the table 'votes' with unique candidates
+    conn.execute('''CREATE TABLE IF NOT EXISTS votes(
+    candidate VARCHAR(64) PRIMARY KEY NOT NULL,
+    votes INT NOT NULL,
+    UNIQUE(candidate));''')
+    print("-> Created 'votes' table")
+
+    # Initialization of candidates (silently ignores duplicates)
+    for x in candidates:
+        conn.execute('''INSERT OR IGNORE INTO votes(candidate, votes)
+        VALUES (':candidate', 0)''',{'candidate' : x})
+    print("-> Created candidates for the elections")
+    # Applies the INSERTS
+    conn.commit()
+
+    
 def sendMsg(update, msg):
     update.message.reply_text(
         text = msg,
         parse_mode = "html"
     )
 
-    
+
 ##########################
 # CONVERSATION FUNCTIONS #
 ##########################
-    
+
 def start_Command(update, context):
     sendMsg(update, msgs.start_msg)
 
 def register_Command(update, context):
-    conn = sqlite3.connect('voters.db')
     cursor = conn.cursor()
     # Telegram username (@...)
     telegramid = update.message.from_user.id
@@ -70,16 +101,9 @@ def main():
     )
     dp.add_handler(conv_handler)
 
-    # Connection with the DB (must be a global variable)
-    conn = sqlite3.connect('voters.db') 
-    print("-> Connected to the DB")
-    # Creation of the table if doesn't exists
-    conn.execute('''CREATE TABLE IF NOT EXISTS registered_users(
-    telegramID VARCHAR(64) PRIMARY KEY,
-    alias VARCHAR(64) NOT NULL,
-    fullName VARCHAR(64) NOT NULL);''')
-    cursor = conn.cursor()
-    
+    # Init DB
+    initDB();
+
     # Starts the bot
     updater.start_polling(clean = True)
     updater.idle()
