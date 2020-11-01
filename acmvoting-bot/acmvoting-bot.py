@@ -15,7 +15,7 @@ import sqlite3
 
 def sendMsg(update, msg):
     update.message.reply_text(
-        text = msg,
+        text = msgs.start_msg,
         parse_mode = "html"
     )
 
@@ -25,7 +25,7 @@ def sendMsg(update, msg):
 ##########################
     
 def start_Command(update, context):
-    sendMsg(update, start_msg)
+    sendMsg(update, msgs.start_msg)
 
 def register_Command(update, context):
     global conn
@@ -40,9 +40,9 @@ def register_Command(update, context):
         cursor.execute('''INSERT INTO registered_users values (:username, :fullname)''',
                        {'username':username, 'fullname': update.message.from_user.full_name})
         conn.commit()
-        sendMsg(update, user_registered)
+        sendMsg(update, msgs.user_registered)
     else:
-        sendMsg(update, user_already_registered)
+        sendMsg(update, msgs.user_already_registered)
 
 
 ########
