@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from telegram import Update
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, ConversationHandler
 
 import msgs
 
@@ -25,24 +25,24 @@ def sendMsg(update, msg):
 ##########################
     
 def start_Command(update, context):
-    sendMsg(update, start_msg)
+    sendMsg(update, msgs.start_msg)
 
 def register_Command(update, context):
-    global conn
-    global cursor
+    conn = sqlite3.connect('voters.db')
+    cursor = conn.cursor()
     # Telegram username (@...)
-    username = update.message.from_user.username
+    telegramid = update.message.from_user.id
     # Check if user is already on the DB
-    cursor.execute('''SELECT * FROM registered_users WHERE telegramID=:username''',
-                   {'username':username})
+    cursor.execute('''SELECT * FROM registered_users WHERE telegramID=:id''',
+                   {'id':telegramid})
     if (cursor.fetchone() is None):
         # User is added to the DB with its username as key and the full name as value
-        cursor.execute('''INSERT INTO registered_users values (:username, :fullname)''',
-                       {'username':username, 'fullname': update.message.from_user.full_name})
+        cursor.execute('''INSERT INTO registered_users values (:telegramid, :alias, :fullname)''',
+                       {'telegramid':telegramid, 'alias':update.message.from_user.username, 'fullname': update.message.from_user.full_name})
         conn.commit()
-        sendMsg(update, user_registered)
+        sendMsg(update, msgs.user_registered)
     else:
-        sendMsg(update, user_already_registered)
+        sendMsg(update, msgs.user_already_registered)
 
 
 ########
@@ -64,18 +64,19 @@ def main():
 
     # Handlers
     conv_handler = ConversationHandler(
-        entry_points = [CommandHandler('start', start_Command)],
+        entry_points = [CommandHandler('start', start_Command), CommandHandler('registrarme', register_Command)],
         states = {}, # States aren't required yet
         fallbacks = [CommandHandler('registrarme', register_Command)]
     )
     dp.add_handler(conv_handler)
 
     # Connection with the DB (must be a global variable)
-    conn = sqlite3.connect('voters.db')
+    conn = sqlite3.connect('voters.db') 
     print("-> Connected to the DB")
     # Creation of the table if doesn't exists
     conn.execute('''CREATE TABLE IF NOT EXISTS registered_users(
     telegramID VARCHAR(64) PRIMARY KEY,
+    alias VARCHAR(64) NOT NULL,
     fullName VARCHAR(64) NOT NULL);''')
     cursor = conn.cursor()
     
