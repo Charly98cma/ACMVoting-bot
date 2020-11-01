@@ -24,13 +24,13 @@ def register_Command(update, context):
     username = update.message.from_user.username
     # Check if user is already on the DB
     cursor.execute('''SELECT * FROM registered_users WHERE telegramID=:username''',
-                  {'username':username})
+                   {'username':username})
     if (cursor.fetchone() is None):
         # User is added to the DB with its username as key and the full name as value
         cursor.execute('''INSERT INTO registered_users values (:username, :fullname)''',
                        {'username':username, 'fullname': update.message.from_user.full_name})
         conn.commit()
-        
+
         update.message.reply_text(
             text = user_registered,
             parse_mode="html"
@@ -40,6 +40,8 @@ def register_Command(update, context):
             text = user_already_registered,
             parse_mode="html"
         )
+
+
 def main():
     # TOKEN
     if 'VOTING_TOKEN' not in os.environ:
@@ -64,8 +66,14 @@ def main():
 
     # Connection with the DB (must be a global variable)
     conn = sqlite3.connect('voters.db')
-    cursor = conn.cursor()
+    print("-> Connected to the DB")
 
+    conn.execute('''CREATE TABLE IF NOT EXISTS registered_users(
+    telegramID VARCHAR(64) PRIMARY KEY,
+    fullName VARCHAR(64) NOT NULL);''')
+
+    cursor = conn.cursor()
+    
     # Starts the bot
     updater.start_polling(clean = True)
     updater.idle()
