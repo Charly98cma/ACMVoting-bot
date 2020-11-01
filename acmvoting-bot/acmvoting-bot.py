@@ -15,7 +15,7 @@ import sqlite3
 
 def sendMsg(update, msg):
     update.message.reply_text(
-        text = msg,
+        text = msgs.start_msg,
         parse_mode = "html"
     )
 
