@@ -45,7 +45,7 @@ def initDB():
     conn.close()
     
 def sendMsg(update, msg):
-    Update.message.reply_text(
+    update.message.reply_text(
         text = msg,
         parse_mode = "html"
     )
