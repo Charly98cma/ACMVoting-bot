@@ -38,10 +38,10 @@ def initDB():
     # Initialization of candidates (silently ignores duplicates)
     for x in candidates:
         conn.execute('''INSERT OR IGNORE INTO votes(candidate, votes)
-        VALUES (':candidate', 0)''',{'candidate' : x})
+        VALUES (?, ?)''', (x, 0))
+        conn.commit()
     print("-> Created candidates for the elections")
     # Applies the INSERTS
-    conn.commit()
     conn.close()
     
 def sendMsg(update, msg):
