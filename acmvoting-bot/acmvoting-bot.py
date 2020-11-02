@@ -9,9 +9,6 @@ import os
 import sys
 import sqlite3
 
-# Unique connection with the DB (must be a global variable)
-conn = sqlite3.connect('voters.db')
-print("-> Connected to the DB")
 
 # List of candidates (the first one is the blank vote)
 candidates = ["blanco", "ferrero"]
@@ -22,6 +19,8 @@ candidates = ["blanco", "ferrero"]
 ######################
 
 def initDB():
+    conn = sqlite3.connect('voters.db')
+    print("-> Connected to the DB")
     # Creation of the table 'registered_users'
     conn.execute('''CREATE TABLE IF NOT EXISTS registered_users(
     telegramID VARCHAR(64) PRIMARY KEY NOT NULL,
@@ -43,10 +42,10 @@ def initDB():
     print("-> Created candidates for the elections")
     # Applies the INSERTS
     conn.commit()
-
+    conn.close()
     
 def sendMsg(update, msg):
-    update.message.reply_text(
+    Update.message.reply_text(
         text = msg,
         parse_mode = "html"
     )
@@ -60,17 +59,17 @@ def start_Command(update, context):
     sendMsg(update, msgs.start_msg)
 
 def register_Command(update, context):
+    conn = sqlite3.connect('voters.db')
     cursor = conn.cursor()
-    # Telegram username (@...)
-    telegramid = update.message.from_user.id
     # Check if user is already on the DB
     cursor.execute('''SELECT * FROM registered_users WHERE telegramID=:id''',
-                   {'id':telegramid})
+                   {'id':update.message.from_user.id})
     if (cursor.fetchone() is None):
         # User is added to the DB with its username as key and the full name as value
         cursor.execute('''INSERT INTO registered_users values (:telegramid, :alias, :fullname)''',
-                       {'telegramid':telegramid, 'alias':update.message.from_user.username, 'fullname': update.message.from_user.full_name})
+                       {'telegramid':update.message.from_user.id, 'alias':update.message.from_user.username, 'fullname': update.message.from_user.full_name})
         conn.commit()
+        conn.close()
         sendMsg(update, msgs.user_registered)
     else:
         sendMsg(update, msgs.user_already_registered)
