@@ -81,7 +81,10 @@ def votar_Command(update, context):
     conn.execute('''SELECT votado FROM registered_users WHERE telegramID=:id''',
                  {'id:':update.message.from_use.id})
     # If the value is 0, then the user can vote
-    if (cursor.fetchone() == 0):
+    res = cursor.fetchone()
+    if (res is None):
+        sendMsg(update, "No puedes votar al no estar registrado/a en la lista de votantes.")
+    elif (res == 0):
         keyboard = [
             [InlineKeyboardButton("-- VOTO EN BLANCO --", callback_data="blanco")],
             [InlineKeyboardButton("Álvaro Ferrero", callback_data="ferrero")]
