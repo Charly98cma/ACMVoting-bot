@@ -79,7 +79,7 @@ def register_Command(update, context):
 def votar_Command(update, context):
     conn = sqlite3.connect('voters.db')
     conn.execute('''SELECT votado FROM registered_users WHERE telegramID=:id''',
-                 {'id:':update.message.from_use.id})
+                 {'id:':update.message.from_user.id})
     # If the value is 0, then the user can vote
     res = cursor.fetchone()
     if (res is None):
@@ -130,7 +130,7 @@ def main():
 
     # Handlers
     conv_handler = ConversationHandler(
-        entry_points = [CommandHandler('start', start_Command), CommandHandler('votar', votar_Command)],
+        entry_points = [CommandHandler('start', start_Command), CommandHandler('registrarme', register_Command), CommandHandler('votar', votar_Command)],
         states = {},
     fallbacks = [CommandHandler('votar', votar_Command)]# [CommandHandler('registrarme', register_Command)]
     )
