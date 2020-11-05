@@ -78,10 +78,11 @@ def register_Command(update, context):
 
 def votar_Command(update, context):
     conn = sqlite3.connect('voters.db')
-    conn.execute('''SELECT votado FROM registered_users WHERE telegramID=:id''',
-                 {'id:':update.message.from_user.id})
+    cursor = conn.cursor()
+    cursor.execute('''SELECT votado FROM registered_users WHERE telegramID=:id''',
+                 {'id':update.message.from_user.id})
     # If the value is 0, then the user can vote
-    res = cursor.fetchone()
+    res = (cursor.fetchone())[0]
     if (res is None):
         sendMsg(update, "No puedes votar al no estar registrado/a en la lista de votantes.")
     elif (res == 0):
@@ -91,6 +92,9 @@ def votar_Command(update, context):
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         update.message.reply_text("Elige la candidatura a la que quieres dar tu voto:", reply_markup=reply_markup)
+        # Update the user info to mark it has voted
+        conn.execute('''UPDATE registered_users SET votado=1 WHERE telegramID=?''', (update.message.from_user.id,))
+        conn.commit()
     else:
         # If the value is 1, then the user has already voted
         sendMsg(update, "Solo se permite un voto por cada votante.")
@@ -103,9 +107,6 @@ def voto(update, context):
     conn = sqlite3.connect('voters.db')
     # Update the votes on the selected candidate
     conn.execute('''UPDATE votes_table SET votes=votes+1 WHERE candidate=?''', (query.data,))
-    conn.commit()
-    # Update the user info to mark it has voted
-    conn.execute('''UPDATE registered_users SET votado=1 WHERE telegramID=?''', (update.message.from_use.id,))
     conn.commit()
     conn.close()
     query.edit_message_text(text="Muchas gracias por participar en las elecciones de ACM-UPM.")
