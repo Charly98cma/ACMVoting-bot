@@ -10,8 +10,10 @@ import sys
 import sqlite3
 
 
-# List of candidates (the first one is the blank vote)
-candidates = ["blanco", "ferrero"]
+# Dict of candidates (the first one is the blank vote)
+# "key of the candidate" : "Name of the candidate"
+candidates = {"blanco" : "-- VOTO EN BLANCO --",
+              "ferrero" : "Álvaro Ferrero"}
 
 
 ######################
@@ -86,10 +88,8 @@ def votar_Command(update, context):
     if (res is None):
         sendMsg(update, "No puedes votar al no estar registrado/a en la lista de votantes.")
     elif (res == 0):
-        keyboard = [
-            [InlineKeyboardButton("-- VOTO EN BLANCO --", callback_data="blanco")],
-            [InlineKeyboardButton("Álvaro Ferrero", callback_data="ferrero")]
-        ]
+        for x,y in candidates.items():
+            keyboard.append(InlineKeyboardButton(y, callback_data=x))
         reply_markup = InlineKeyboardMarkup(keyboard)
         update.message.reply_text("Elige la candidatura a la que quieres dar tu voto:", reply_markup=reply_markup)
         # Update the user info to mark it has voted
