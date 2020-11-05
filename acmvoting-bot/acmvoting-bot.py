@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, ConversationHandler
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, ConversationHandler, CallbackQueryHandler, CallbackContext
 
 import msgs
 
@@ -29,7 +29,7 @@ def initDB():
     print("-> Created 'registered_users' table")
 
     # Creation of the table 'votes' with unique candidates
-    conn.execute('''CREATE TABLE IF NOT EXISTS votes(
+    conn.execute('''CREATE TABLE IF NOT EXISTS votes_table(
     candidate VARCHAR(64) PRIMARY KEY NOT NULL,
     votes INT NOT NULL,
     UNIQUE(candidate));''')
@@ -37,13 +37,13 @@ def initDB():
 
     # Initialization of candidates (silently ignores duplicates)
     for x in candidates:
-        conn.execute('''INSERT OR IGNORE INTO votes(candidate, votes)
+        conn.execute('''INSERT OR IGNORE INTO votes_table(candidate, votes)
         VALUES (?, ?)''', (x, 0))
         conn.commit()
-    print("-> Created candidates for the elections")
-    # Applies the INSERTS
+        print("-> Created candidate 'x' for the elections")
+        # Applies the INSERTS
     conn.close()
-    
+
 def sendMsg(update, msg):
     update.message.reply_text(
         text = msg,
@@ -58,6 +58,7 @@ def sendMsg(update, msg):
 def start_Command(update, context):
     sendMsg(update, msgs.start_msg)
 
+
 def register_Command(update, context):
     conn = sqlite3.connect('voters.db')
     cursor = conn.cursor()
@@ -69,10 +70,42 @@ def register_Command(update, context):
         cursor.execute('''INSERT INTO registered_users values (:telegramid, :alias, :fullname)''',
                        {'telegramid':update.message.from_user.id, 'alias':update.message.from_user.username, 'fullname': update.message.from_user.full_name})
         conn.commit()
-        conn.close()
         sendMsg(update, msgs.user_registered)
     else:
         sendMsg(update, msgs.user_already_registered)
+    conn.close()
+
+
+def votar_Command(update, context):
+    conn = sqlite3.connect('voters.db')
+    conn.execute('''SELECT votado FROM registered_users WHERE telegramID=:id''',
+                 {'id:':update.message.from_use.id})
+    # If the value is 0, then the user can vote
+    if (cursor.fetchone() == 0):
+        keyboard = [
+            [InlineKeyboardButton("-- VOTO EN BLANCO --", callback_data="blanco")],
+            [InlineKeyboardButton("Álvaro Ferrero", callback_data="ferrero")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text("Elige la candidatura a la que quieres dar tu voto:", reply_markup=reply_markup)
+    else:
+        # If the value is 1, then the user has already voted
+        sendMsg(update, "Solo se permite un voto por cada votante.")
+    conn.close()
+
+def voto(update, context):
+    query = update.callback_query
+    query.answer()
+    # Include the vote on the DB
+    conn = sqlite3.connect('voters.db')
+    # Update the votes on the selected candidate
+    conn.execute('''UPDATE votes_table SET votes=votes+1 WHERE candidate=?''', (query.data,))
+    conn.commit()
+    # Update the user info to mark it has voted
+    conn.execute('''UPDATE registered_users SET votado=1 WHERE telegramID=?''', (update.message.from_use.id,))
+    conn.commit()
+    conn.close()
+    query.edit_message_text(text="Muchas gracias por participar en las elecciones de ACM-UPM.")
 
 
 ########
@@ -94,11 +127,17 @@ def main():
 
     # Handlers
     conv_handler = ConversationHandler(
-        entry_points = [CommandHandler('start', start_Command), CommandHandler('registrarme', register_Command)],
-        states = {}, # States aren't required yet
-        fallbacks = [CommandHandler('registrarme', register_Command)]
+        entry_points = [CommandHandler('start', start_Command), CommandHandler('votar', votar_Command)],
+        states = {},
+    fallbacks = [CommandHandler('votar', votar_Command)]# [CommandHandler('registrarme', register_Command)]
     )
+
+    # Handler of the InlineKeyboardButton
+    dp.add_handler(CallbackQueryHandler(voto))
+    # Added handlers of commands
     dp.add_handler(conv_handler)
+
+    
 
     # Init DB
     initDB();
