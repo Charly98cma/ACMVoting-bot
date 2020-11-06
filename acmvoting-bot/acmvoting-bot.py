@@ -88,6 +88,7 @@ def votar_Command(update, context):
     if (res is None):
         sendMsg(update, "No puedes votar al no estar registrado/a en la lista de votantes.")
     elif (res == 0):
+        keyboard = []
         for x,y in candidates.items():
             keyboard.append(InlineKeyboardButton(y, callback_data=x))
         reply_markup = InlineKeyboardMarkup(keyboard)
