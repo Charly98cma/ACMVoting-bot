@@ -90,7 +90,8 @@ def votar_Command(update, context):
     elif (res == 0):
         keyboard = []
         for x,y in candidates.items():
-            keyboard.append(InlineKeyboardButton(y, callback_data=x))
+            button = [InlineKeyboardButton(y, callback_data=x)]
+            keyboard.append(button)
         reply_markup = InlineKeyboardMarkup(keyboard)
         update.message.reply_text("Elige la candidatura a la que quieres dar tu voto:", reply_markup=reply_markup)
         # Update the user info to mark it has voted
