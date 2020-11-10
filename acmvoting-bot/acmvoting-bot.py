@@ -62,21 +62,7 @@ def start_Command(update, context):
 
 
 def register_Command(update, context):
-    conn = sqlite3.connect('voters.db')
-    cursor = conn.cursor()
-    # Check if user is already on the DB
-    cursor.execute('''SELECT * FROM registered_users WHERE telegramID=:id''',
-                   {'id':update.message.from_user.id})
-    if (cursor.fetchone() is None):
-        # User is added to the DB with its username as key and the full name as value
-        cursor.execute('''INSERT INTO registered_users values (:telegramid, :alias, :fullname)''',
-                       {'telegramid':update.message.from_user.id, 'alias':update.message.from_user.username, 'fullname': update.message.from_user.full_name})
-        conn.commit()
-        sendMsg(update, msgs.user_registered)
-    else:
-        sendMsg(update, msgs.user_already_registered)
-    conn.close()
-
+    sendMsg(update, "El periodo de registro ya ha concluido")
 
 def votar_Command(update, context):
     conn = sqlite3.connect('voters.db')
