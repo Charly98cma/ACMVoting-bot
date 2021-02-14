@@ -3,12 +3,11 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, ConversationHandler, CallbackQueryHandler, CallbackContext
 
+from os      import environ as osEnv
+from sys     import stderr as STDERR
+from sqlite3 import connect as sqlConn
+
 import msgs
-
-import os
-import sys
-import sqlite3
-
 
 # Dict of candidates (the first one is the blank vote)
 # "key of the candidate" : "Name of the candidate"
@@ -21,7 +20,7 @@ candidates = {"blanco" : "-- VOTO EN BLANCO --",
 ######################
 
 def initDB():
-    conn = sqlite3.connect('voters.db')
+    conn = sqlConn('voters.db')
     print("-> Connected to the DB")
     # Creation of the table 'registered_users'
     conn.execute('''CREATE TABLE IF NOT EXISTS registered_users(
@@ -46,6 +45,7 @@ def initDB():
         # Applies the INSERTS
     conn.close()
 
+
 def sendMsg(update, msg):
     update.message.reply_text(
         text = msg,
@@ -62,7 +62,7 @@ def start_Command(update, context):
 
 
 def register_Command(update, context):
-    conn = sqlite3.connect('voters.db')
+    conn = sqlConn('voters.db')
     cursor = conn.cursor()
     # Check if user is already on the DB
     cursor.execute('''SELECT * FROM registered_users WHERE telegramID=:id''',
@@ -79,7 +79,7 @@ def register_Command(update, context):
 
 
 def votar_Command(update, context):
-    conn = sqlite3.connect('voters.db')
+    conn = sqlConn('voters.db')
     cursor = conn.cursor()
     cursor.execute('''SELECT votado FROM registered_users WHERE telegramID=:id''',
                  {'id':update.message.from_user.id})
@@ -105,7 +105,7 @@ def voto(update, context):
     query = update.callback_query
     query.answer()
     # Include the vote on the DB
-    conn = sqlite3.connect('voters.db')
+    conn = sqlConn('voters.db')
     # Update the votes on the selected candidate
     conn.execute('''UPDATE votes_table SET votes=votes+1 WHERE candidate=?''', (query.data,))
     conn.commit()
@@ -118,12 +118,12 @@ def voto(update, context):
 ########
 def main():
     # TOKEN
-    if 'VOTING_TOKEN' not in os.environ:
-        print("Environment variable 'VOTING_TOKEN' not defined.", file=sys.stderr)
+    if 'VOTING_TOKEN' not in osEnv:
+        print("Environment variable 'VOTING_TOKEN' not defined.", file=STDERR)
         exit(1)
 
     updater = Updater(
-        token = os.environ.get('VOTING_TOKEN'),
+        token = osEnv.get('VOTING_TOKEN'),
         use_context = True
     )
 
@@ -134,15 +134,13 @@ def main():
     conv_handler = ConversationHandler(
         entry_points = [CommandHandler('start', start_Command), CommandHandler('registrarme', register_Command), CommandHandler('votar', votar_Command)],
         states = {},
-    fallbacks = [CommandHandler('votar', votar_Command)]# [CommandHandler('registrarme', register_Command)]
+        fallbacks = [CommandHandler('votar', votar_Command)]# [CommandHandler('registrarme', register_Command)]
     )
 
     # Handler of the InlineKeyboardButton
     dp.add_handler(CallbackQueryHandler(voto))
     # Added handlers of commands
     dp.add_handler(conv_handler)
-
-    
 
     # Init DB
     initDB();
