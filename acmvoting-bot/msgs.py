@@ -5,4 +5,17 @@ start_msg = "<b>Bienvenido/a al bot de las elecciones de ACM UPM</b>\n\n" +\
 
 user_already_registered = "<b>Ya estabas registrado/a</b> en la lista de participación de las elecciones de ACM UPM"
 
+user_already_voted = "Solo se permite un voto por cada votante."
+
 user_registered = "<b>Se te acaba de registrar</b> en la lista de participación de las elecciones de ACM UPM"
+
+user_not_registered = "<b>No puedes votar</b> al no estar registrado/a en la lista de votantes."
+
+ask_user_vote = "Elige la candidatura a la que quieres dar tu voto:"
+
+voting_date = "Aún no ha empezado la votación, la cual tendrá lugar el
+<b>{date}</b> a partir de las <b>time</b> horas"
+
+register_over = "El periodo de registro para las elecciones acabó el <b>{date}</b> a partir de las <b>time</b> horas"
+
+acm_greetings = "Muchas gracias por participar en las elecciones de ACM-UPM."
