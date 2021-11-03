@@ -13,9 +13,8 @@ user_not_registered = "<b>No puedes votar</b> al no estar registrado/a en la lis
 
 ask_user_vote = "Elige la candidatura a la que quieres dar tu voto:"
 
-voting_date = "Aún no ha empezado la votación, la cual tendrá lugar el
-<b>{date}</b> a partir de las <b>time</b> horas"
+voting_date = "Aún no ha empezado la votación, la cual tendrá lugar el <b>{date}</b> a partir de las <b>{time}</b> horas"
 
-register_over = "El periodo de registro para las elecciones acabó el <b>{date}</b> a partir de las <b>time</b> horas"
+register_over = "El periodo de registro para las elecciones acabó el <b>{date}</b> a partir de las <b>{time}</b> horas"
 
 acm_greetings = "Muchas gracias por participar en las elecciones de ACM-UPM."

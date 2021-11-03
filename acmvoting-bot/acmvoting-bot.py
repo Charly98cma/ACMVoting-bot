@@ -5,11 +5,8 @@ from telegram import \
 from telegram.ext import \
     Updater, CommandHandler, ConversationHandler, CallbackQueryHandler
 
-from datetime import datetime
-from os import environ as osEnv
-from sys import stderr as STDERR
+import datetime
 from sqlite3 import connect as sqlConn
-from apscheduler.schedulers.background import BackgroundScheduler
 
 import msgs
 import queries
@@ -20,11 +17,9 @@ import queries
 candidates = {"blanco": "-- VOTO EN BLANCO --",
               "borja": "Borja Martinena"}
 
-# Scheduler to send reminder of voting
-sched = BackgroundScheduler()
 
-# VOTING DATE = 15/11/2021
-VOTING_DATE = datetime(2021, 11, 15, 8, 0)
+VOTING_DATE = datetime.datetime.strptime(
+    open('election-day', 'r').readline().strip(), "%d/%m/%Y %H:%M")
 
 
 ######################
@@ -41,12 +36,13 @@ def initDB():
     print("-> Created 'registered_users' table")
 
     # Creation of the table 'votes' with unique candidates
-    conn.execute(queries.create_votes_table)
+    conn.execute(queries.create_vote_table)
     print("-> Created 'votes' table")
 
     # Initialization of candidates (silently ignores duplicates)
     for cand in candidates:
-        conn.execute(queries.insert_candidate, (cand, 0))
+        conn.execute(queries.insert_candidate,
+                     {"candidate": cand})
         conn.commit()
         print(f"-> Created candidate '{cand}' for the elections")
 
@@ -71,10 +67,11 @@ def start_Command(update, context):
 
 def register_Command(update, context):
 
-    if datetime.today() >= VOTING_DATE:
+    if datetime.datetime.today() >= VOTING_DATE:
         sendMsg(update,
-                msgs.register_over_date.format(date=VOTING_DATE.strftime("%d/%m/%Y"),
-                                               time=VOTING_DATE.strftime("%H:%M")))
+                msgs.register_over.format(
+                    date=VOTING_DATE.strftime('%d/%m/%Y'),
+                    time=VOTING_DATE.strftime('%H:%M')))
         return
 
     conn = sqlConn('voters.db')
@@ -91,7 +88,7 @@ def register_Command(update, context):
                         'alias': update.message.from_user.username,
                         'fullname': update.message.from_user.full_name})
         conn.commit()
-        print(f"--> Registered voter '{update.message.from_user.id}' - '{update.message.from_user.alias}'")
+        print(f"--> Registered voter '{update.message.from_user.id}' - '{update.message.from_user.username}'")
         sendMsg(update, msgs.user_registered)
 
     else:
@@ -102,7 +99,7 @@ def register_Command(update, context):
 
 def vote_Command(update, context):
 
-    if datetime.today() < VOTING_DATE:
+    if datetime.datetime.today() < VOTING_DATE:
         sendMsg(update,
                 msgs.voting_date.format(date=VOTING_DATE.strftime("%d/%m/%Y"),
                                         time=VOTING_DATE.strftime("%H:%M")))
@@ -135,7 +132,7 @@ def vote_Command(update, context):
 
         # Update the user info to mark it has voted
         conn.execute(queries.register_user_vote,
-                     (update.message.from_user.id,))
+                     {'id': update.message.from_user.id})
         conn.commit()
         print(f"--> User {update.message.from_user.id} voted.")
 
@@ -154,7 +151,8 @@ def vote(update, context):
     conn = sqlConn('voters.db')
 
     # Update the votes on the selected candidate
-    conn.execute(queries.update_vote, (query.data,))
+    conn.execute(queries.update_vote,
+                 {"candidate": query.data})
     conn.commit()
     conn.close()
 
@@ -166,13 +164,8 @@ def vote(update, context):
 ########
 def main():
 
-    # TOKEN
-    if 'VOTING_TOKEN' not in osEnv:
-        print("Environment variable 'VOTING_TOKEN' not defined.", file=STDERR)
-        exit(1)
-
     updater = Updater(
-        token=osEnv.get('VOTING_TOKEN'),
+        token=open('token', 'r').readline().strip(),
         use_context=True
     )
 
@@ -194,14 +187,11 @@ def main():
     # Added handlers of commands
     dp.add_handler(conv_handler)
 
-    # TODO
-    sched.add_job(sendReminder, run_date=VOTING_DATE,)
-
     # Init DB
     initDB()
 
     # Starts the bot
-    updater.start_polling(clean=True)
+    updater.start_polling(drop_pending_updates=True)
     updater.idle()
 
 
