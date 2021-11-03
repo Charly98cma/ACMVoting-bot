@@ -6,7 +6,7 @@ from telegram.ext import \
     Updater, CommandHandler, ConversationHandler, CallbackQueryHandler
 
 import datetime
-from sqlite3 import connect as sqlConn
+from sqlite3 import connect as sql_conn
 
 import msgs
 import queries
@@ -28,7 +28,7 @@ VOTING_DATE = datetime.datetime.strptime(
 
 
 def initDB():
-    conn = sqlConn('voters.db')
+    conn = sql_conn('voters.db')
     print("-> Connected to the DB")
 
     # Creation of the table 'registered_users'
@@ -74,7 +74,7 @@ def register_Command(update, context):
                     time=VOTING_DATE.strftime('%H:%M')))
         return
 
-    conn = sqlConn('voters.db')
+    conn = sql_conn('voters.db')
     cursor = conn.cursor()
 
     # Check user already registered
@@ -105,7 +105,7 @@ def vote_Command(update, context):
                                         time=VOTING_DATE.strftime("%H:%M")))
         return
 
-    conn = sqlConn('voters.db')
+    conn = sql_conn('voters.db')
     cursor = conn.cursor()
 
     # Check if user already voted
@@ -148,7 +148,7 @@ def vote(update, context):
     query.answer()
 
     # Include the vote on the DB
-    conn = sqlConn('voters.db')
+    conn = sql_conn('voters.db')
 
     # Update the votes on the selected candidate
     conn.execute(queries.update_vote,
