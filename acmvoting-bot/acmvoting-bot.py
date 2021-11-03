@@ -22,13 +22,16 @@ VOTING_DATE = datetime.datetime.strptime(
     open('election-day', 'r').readline().strip(), "%d/%m/%Y %H:%M")
 
 
+DB_NAME = 'voters.db'
+
+
 ######################
 # AUXILIAR FUNCTIONS #
 ######################
 
 
 def initDB():
-    conn = sql_conn('voters.db')
+    conn = sql_conn(DB_NAME)
     print("-> Connected to the DB")
 
     # Creation of the table 'registered_users'
@@ -74,7 +77,7 @@ def register_Command(update, context):
                     time=VOTING_DATE.strftime('%H:%M')))
         return
 
-    conn = sql_conn('voters.db')
+    conn = sql_conn(DB_NAME)
     cursor = conn.cursor()
 
     # Check user already registered
@@ -105,7 +108,7 @@ def vote_Command(update, context):
                                         time=VOTING_DATE.strftime("%H:%M")))
         return
 
-    conn = sql_conn('voters.db')
+    conn = sql_conn(DB_NAME)
     cursor = conn.cursor()
 
     # Check if user already voted
@@ -148,7 +151,7 @@ def vote(update, context):
     query.answer()
 
     # Include the vote on the DB
-    conn = sql_conn('voters.db')
+    conn = sql_conn(DB_NAME)
 
     # Update the votes on the selected candidate
     conn.execute(queries.update_vote,
