@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import telegram
+from telegram import Bot
 
 import datetime
 from sqlite3 import connect as sql_conn
@@ -31,12 +31,13 @@ def read_reg_users():
 
 def main():
 
-    bot = telegram.Bot(token=open('token', 'r').readline().strip())
+    bot = Bot(token=open('token', 'r').readline().strip())
 
     for user in read_reg_users():
         bot.send_message(
             chat_id=user,
-            text=msgs.reminder.format(time=VOTING_DATE.strftime('%H:%M'))
+            text=msgs.reminder.format(time=VOTING_DATE.strftime('%H:%M')),
+            parse_mode="html"
         )
 
 
