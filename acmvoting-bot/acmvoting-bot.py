@@ -102,12 +102,6 @@ def register_Command(update, context):
 
 def vote_Command(update, context):
 
-    if datetime.datetime.today() < VOTING_DATE:
-        sendMsg(update,
-                msgs.voting_date.format(date=VOTING_DATE.strftime("%d/%m/%Y"),
-                                        time=VOTING_DATE.strftime("%H:%M")))
-        return
-
     conn = sql_conn(DB_NAME)
     cursor = conn.cursor()
 
@@ -116,12 +110,21 @@ def vote_Command(update, context):
                    {'id': update.message.from_user.id})
 
     # If the value is 0, then the user can vote
-    res = (cursor.fetchone())[0]
+    res = cursor.fetchone()
 
     if (res is None):
         sendMsg(update, msgs.user_not_registered)
 
-    elif (res == 0):
+    elif (res[0] == 0):
+
+        if datetime.datetime.today() < VOTING_DATE:
+            sendMsg(update,
+                    msgs.voting_date.format(
+                        date=VOTING_DATE.strftime("%d/%m/%Y"),
+                        time=VOTING_DATE.strftime("%H:%M")))
+            conn.close()
+            return
+
         keyboard = []
         # Add button for each candidate
         for x, y in candidates.items():
