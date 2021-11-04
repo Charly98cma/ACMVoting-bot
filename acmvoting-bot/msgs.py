@@ -19,5 +19,4 @@ register_over = "El periodo de registro para las elecciones acabó el <b>{date}<
 
 acm_greetings = "Muchas gracias por participar en las elecciones de ACM-UPM."
 
-reminder = "Desde ACM UPM te recordamos que el periodo de votación abre hoy a
-las <b>{time}</b>.\n¡Que no se te olvida votar :P!"
+reminder = "Desde ACM UPM te recordamos que el periodo de votación abre hoy a las <b>{time}</b>.\n¡Que no se te olvida votar! 😜"
