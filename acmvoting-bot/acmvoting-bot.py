@@ -148,6 +148,15 @@ def vote_Command(update, context):
     conn.close()
 
 
+def candidaturas_Command(update, context):
+
+    x = ""
+    for key, val in candidates.items():
+        if key != "blanco":
+            x += "- <b>{}</b>\n".format(val)
+    sendMsg(update, msgs.candidaturas_msg.format(cands=x))
+
+
 def vote(update, context):
 
     query = update.callback_query
@@ -182,7 +191,8 @@ def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start_Command),
                       CommandHandler('registrarme', register_Command),
-                      CommandHandler('votar', vote_Command)],
+                      CommandHandler('votar', vote_Command),
+                      CommandHandler('candidaturas', candidaturas_Command)],
         states={},
         fallbacks=[CommandHandler('registrarme', register_Command),
                    CommandHandler('votar', vote_Command)]
