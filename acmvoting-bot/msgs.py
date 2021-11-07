@@ -1,7 +1,16 @@
 start_msg = "<b>Bienvenido/a al bot de las elecciones de ACM UPM</b>\n\n" +\
-    "Debido a la situación actual, no podremos realizar las elecciones de forma presencial como anteriormente, así que hemos decidido crear este bot para poder registrar los votos de todos los alumnos/as activos en la asociación, es decir, que sigan en la universidad que quieran votar.\n\n" +\
-    "Para registrarte en las votaciones, solo tienes que usar el comando <b>/registrarme</b> y se te incluirá en la lista de votantes.\n\n" +\
-    "El día de  las votaciones, solo los alumnos/as que se hayan registrado previamente podrán votar. Cabe decir que los <b>votos serán secretos</b>, y que en esta fase de registro solo se usará vuestro nombre y nick de Telegram para verificar que pertenecéis a la asociación antes del día de las votaciones."
+    "Debido a la situación actual, no podremos realizar las elecciones de forma " +\
+    "presencial como anteriormente, así que hemos decidido crear este bot para " +\
+    "poder registrar los votos de todos los alumnos/as activos en la " +\
+    "asociación (que sigan en la universidad) que quieran votar.\n\n" +\
+    "Puedes ver los candidatos mediante el comando /candidaturas.\n\n" +\
+    "Para registrarte en las votaciones, solo tienes que usar el comando " +\
+    "/registrarme y se te incluirá en la lista de votantes.\n\n" +\
+    "El día de  las votaciones, solo los alumnos/as que se hayan registrado " +\
+    "previamente podrán votar. Cabe decir que los <b>votos serán secretos</b>, " +\
+    "y que en esta fase de registro solo se usará vuestro nombre y nick de" +\
+    "Telegram para verificar que pertenecéis a la asociación antes del día de " +\
+    "las votaciones."
 
 candidaturas_msg = "Candidaturas presentadas a las elecciones:\n{cands}"
 
